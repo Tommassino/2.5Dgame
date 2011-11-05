@@ -58,8 +58,6 @@ public class Image extends Node{
 		GL11.glVertex2d(0, 1);
 		GL11.glEnd();
 
-		shader.release();
-
 		GL11.glPopMatrix();
 	}
 }

@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 
@@ -46,6 +47,7 @@ public class ImageLoader {
 
 			ByteBuffer data = ByteBuffer.allocateDirect(4 * decoder.getWidth()
 					* decoder.getHeight());
+			data.order(ByteOrder.nativeOrder());
 			decoder.decode(data, decoder.getWidth() * 4,
 					PNGDecoder.TextureFormat.RGBA);
 			data.rewind();
@@ -109,8 +111,10 @@ public class ImageLoader {
 
 			ByteBuffer rgbaData = ByteBuffer.allocateDirect(4
 					* rgbad.getWidth() * rgbad.getHeight());
+			rgbaData.order(ByteOrder.nativeOrder());
 			ByteBuffer deptData = ByteBuffer.allocateDirect(4
 					* deptd.getWidth() * deptd.getHeight());
+			deptData.order(ByteOrder.nativeOrder());
 			int width = rgbad.getWidth();
 			int height = rgbad.getHeight();
 

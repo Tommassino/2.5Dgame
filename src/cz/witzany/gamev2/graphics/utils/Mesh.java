@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 public class Mesh {
+	private static int loadedBuffer = -1;
 	private int VBOBuffer;
 	private int stride;
 	private Shader shader;
@@ -33,7 +34,7 @@ public class Mesh {
 
 		// push data to the buffer
 		ByteBuffer fbuffer = ByteBuffer.allocateDirect(vertices.length * 4);
-		fbuffer.order(ByteOrder.LITTLE_ENDIAN);
+		fbuffer.order(ByteOrder.nativeOrder());
 		for (float f : vertices)
 			fbuffer.putFloat(f);
 		fbuffer.rewind();
@@ -45,7 +46,6 @@ public class Mesh {
 		shader.apply();
 		position = GL20.glGetAttribLocation(shader.shader, "position");
 		texture = GL20.glGetAttribLocation(shader.shader, "texture");
-		shader.release();
 	}
 
 	private int genBuffer() {
@@ -53,8 +53,10 @@ public class Mesh {
 		ARBVertexBufferObject.glGenBuffersARB(buffer);
 		return buffer.get(0);
 	}
-
-	public void draw() {
+	
+	public void bind() {
+		if(loadedBuffer == VBOBuffer)
+			return;
 		// bind the buffer
 		ARBVertexBufferObject.glBindBufferARB(
 				ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, VBOBuffer);
@@ -65,9 +67,11 @@ public class Mesh {
 
 		GL20.glEnableVertexAttribArray(position);
 		GL20.glEnableVertexAttribArray(texture);
+		loadedBuffer = VBOBuffer;
+	}
 
-		// debug draw, draw anything
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, 4); // #TODO indices
+	public void draw() {
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, 4);
 	}
 
 	public void dispose() {

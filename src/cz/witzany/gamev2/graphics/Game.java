@@ -78,7 +78,7 @@ public class Game extends Node implements Runnable {
 		}
 		addChild(new Image(2,100,100,9.9999f,5,"Data/Textures/Sprites/Creeper"));
 		Random r = new Random();
-		for(int i = 0; i < 1000; i++){
+		for(int i = 0; i < 2000; i++){
 			addChild(new DepthSprite(3+i, r.nextInt(800), r.nextInt(600), 0.1, "Data/Textures/Depthsprites/Kostka", 1.0f));
 		}  
 

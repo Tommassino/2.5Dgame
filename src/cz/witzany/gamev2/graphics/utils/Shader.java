@@ -12,8 +12,10 @@ import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.ARBVertexShader;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL20;
 
 public class Shader {
+	private static int activeShader = -1;
 	public int shader;
 	public int vertShader;
 	public int fragShader;
@@ -48,14 +50,27 @@ public class Shader {
 		ARBShaderObjects.glAttachObjectARB(shader, vertShader);
 		ARBShaderObjects.glAttachObjectARB(shader, fragShader);
 		ARBShaderObjects.glLinkProgramARB(shader);
+
+		if(GL20.glGetShader(shader, GL20.GL_LINK_STATUS) == GL11.GL_FALSE){
+			printLogInfo(shaderDir,shader);
+			useShader = false;
+			return;
+		}
+		
 		ARBShaderObjects.glValidateProgramARB(shader);
-		useShader = printLogInfo(shader);
+
+		if(GL20.glGetShader(shader, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE){
+			printLogInfo(shaderDir,shader);
+			useShader = false;
+			return;
+		}
+		useShader = true;
 		System.out.println("Loaded shader " + shaderDir);
 	}
 
 	private int createShader(String filename, int type) {
-		int shader = ARBShaderObjects.glCreateShaderObjectARB(type);
-		if (shader == 0) {
+		int nshader = ARBShaderObjects.glCreateShaderObjectARB(type);
+		if (nshader == 0) {
 			return 0;
 		}
 		String code = "";
@@ -69,15 +84,17 @@ public class Shader {
 			System.out.println("Fail reading vertex shading code");
 			return 0;
 		}
-		ARBShaderObjects.glShaderSourceARB(shader, code);
-		ARBShaderObjects.glCompileShaderARB(shader);
+		ARBShaderObjects.glShaderSourceARB(nshader, code);
+		ARBShaderObjects.glCompileShaderARB(nshader);
 
-		if (!printLogInfo(shader))
+		if(GL20.glGetShader(nshader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE){
+			printLogInfo(filename,nshader);
 			return 0;
-		return shader;
+		}
+		return nshader;
 	}
 
-	private boolean printLogInfo(int obj) {
+	private boolean printLogInfo(String name, int obj) {
 		IntBuffer iVal = BufferUtils.createIntBuffer(1);
 		ARBShaderObjects.glGetObjectParameterARB(obj,
 				ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB, iVal);
@@ -91,10 +108,9 @@ public class Shader {
 			byte[] infoBytes = new byte[length];
 			infoLog.get(infoBytes);
 			String out = new String(infoBytes);
-			System.out.println("Info log:\n" + out);
-		} else
-			return true;
-		return false;
+			System.out.println(name+" log:\n" + out);
+		}
+		return true;
 	}
 
 	public void setTexture(String name, int index, int pointer) {
@@ -106,14 +122,18 @@ public class Shader {
 		ARBShaderObjects.glUniform1iARB(location, index);
 	}
 
-	public void apply() {
-		if (useShader)
+	public synchronized void apply() {
+		if(activeShader == shader)
+			return;
+		if (useShader){
+			release();
 			ARBShaderObjects.glUseProgramObjectARB(shader);
-		else
+			activeShader = shader;
+		}else
 			System.out.println("warning, shader not used");
 	}
 
-	public void release() {
+	private void release() {
 		ARBShaderObjects.glUseProgramObjectARB(0);
 	}
 }

@@ -52,9 +52,8 @@ public class DepthSprite extends Node {
 			throw new RuntimeException("height not available");
 		ARBShaderObjects.glUniform1fARB(location, heightScale);
 		
+		mesh.bind();
 		mesh.draw();
-
-		shader.release();
 
 		GL11.glPopMatrix();
 	}
