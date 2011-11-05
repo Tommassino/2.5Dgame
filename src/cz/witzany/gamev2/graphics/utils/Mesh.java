@@ -67,7 +67,7 @@ public class Mesh {
 		GL20.glEnableVertexAttribArray(texture);
 
 		// debug draw, draw anything
-		GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 5); // #TODO indices
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, 4); // #TODO indices
 	}
 
 	public void dispose() {
