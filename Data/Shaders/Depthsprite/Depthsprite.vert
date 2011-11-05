@@ -1,5 +1,8 @@
+attribute vec3 position;
+attribute vec2 texture;
 
+varying vec2 texturep;
 void main(){
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    gl_Position = gl_ModelViewProjectionMatrix*gl_Vertex;
+    texturep = texture;
+    gl_Position = gl_ModelViewProjectionMatrix*vec4(position,1.0);
 }

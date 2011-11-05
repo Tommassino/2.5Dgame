@@ -6,8 +6,8 @@ import java.io.File;
 import org.lwjgl.opengl.GL11;
 
 import cz.witzany.gamev2.graphics.utils.ImageLoader;
+import cz.witzany.gamev2.graphics.utils.Shader;
 import cz.witzany.gamev2.graphics.utils.ShaderLoader;
-import cz.witzany.gamev2.graphics.utils.ShaderLoader.Shader;
 
 public class Image extends Node{
 

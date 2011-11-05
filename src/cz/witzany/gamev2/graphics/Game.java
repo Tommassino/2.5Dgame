@@ -7,6 +7,11 @@ import org.lwjgl.Sys;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
 
 import cz.witzany.gamev2.net.Message;
 import cz.witzany.gamev2.utils.ByteUtils;
@@ -75,7 +80,7 @@ public class Game extends Node implements Runnable {
 		Random r = new Random();
 		for(int i = 0; i < 1000; i++){
 			addChild(new DepthSprite(3+i, r.nextInt(800), r.nextInt(600), 0.1, "Data/Textures/Depthsprites/Kostka", 1.0f));
-		}
+		}  
 
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
