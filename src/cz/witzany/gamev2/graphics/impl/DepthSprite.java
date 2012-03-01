@@ -22,9 +22,8 @@ public class DepthSprite extends PosNode {
 	private int tex; // #TODO , normal;
 	private float heightScale;
 
-	public DepthSprite(int guid, int x, int y, double scale, String texture,
+	public DepthSprite(int x, int y, double scale, String texture,
 			float heightScale) {
-		super(guid);
 		shader = ShaderLoader.loadShader("Data/Shaders/Depthsprite");
 		mesh = MeshLoader.loadMesh("Data/Mesh/Quad", shader);
 		origSize = new Rectangle();
@@ -38,7 +37,6 @@ public class DepthSprite extends PosNode {
 	}
 
 	public void update() {
-		GL11.glLoadIdentity();
 		GL11.glPushMatrix();
 		Vector3f position = getPosition();
 		GL11.glTranslatef(position.x - width / 2, position.y - height / 2,
@@ -48,7 +46,6 @@ public class DepthSprite extends PosNode {
 		shader.apply();
 		shader.setTexture("colorMap", 0, tex);
 		shader.setFloatUniform("height", heightScale);
-		shader.setFloatUniform("night", Game.getInstance().night);
 
 		mesh.bind();
 		mesh.draw();

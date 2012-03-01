@@ -1,6 +1,7 @@
 package cz.witzany.gamev2.graphics.impl;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.gui.EventHandler;
@@ -11,8 +12,8 @@ public class TextArea extends Image implements KeyHandler {
 
 	private String value;
 
-	public TextArea(int guid, int x, int y, float z, float scale) {
-		super(guid, x, y, z, scale, "Data/Textures/Sprites/CharMap");
+	public TextArea(int x, int y, float z, float scale) {
+		super(x, y, z, scale, "Data/Textures/Sprites/CharMap");
 		value = "";
 	}
 
@@ -21,10 +22,13 @@ public class TextArea extends Image implements KeyHandler {
 	}
 
 	public void delete() {
-		value = value.substring(0, value.length() - 1);
+		if(value.length()>0)
+			value = value.substring(0, value.length() - 1);
 	}
 
 	public void update() {
+		GL11.glPushMatrix();
+		GL11.glScaled(1, -1, 1);
 		// 16
 		float wx = width / 16.0f;
 		float hx = height / 16.0f;
@@ -40,6 +44,7 @@ public class TextArea extends Image implements KeyHandler {
 			dx += 16;
 		}
 		setPosition(x, position.y, position.z);
+		GL11.glPopMatrix();
 	}
 
 	public void handleKeyEvent(int key) {

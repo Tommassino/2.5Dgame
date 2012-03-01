@@ -1,15 +1,54 @@
 package cz.witzany.gamev2.graphics.impl;
 
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_GREATER;
+import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_NEVER;
+import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_SMOOTH;
+import static org.lwjgl.opengl.GL11.GL_STENCIL_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_STENCIL_TEST;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glAlphaFunc;
+import static org.lwjgl.opengl.GL11.glBegin;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glClearDepth;
+import static org.lwjgl.opengl.GL11.glClearStencil;
+import static org.lwjgl.opengl.GL11.glColor3d;
+import static org.lwjgl.opengl.GL11.glDepthFunc;
+import static org.lwjgl.opengl.GL11.glDepthRange;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glEnd;
+import static org.lwjgl.opengl.GL11.glFlush;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.glPushAttrib;
+import static org.lwjgl.opengl.GL11.glScaled;
+import static org.lwjgl.opengl.GL11.glShadeModel;
+import static org.lwjgl.opengl.GL11.glStencilFunc;
+import static org.lwjgl.opengl.GL11.glTexCoord2f;
+import static org.lwjgl.opengl.GL11.glTranslatef;
+import static org.lwjgl.opengl.GL11.glVertex2d;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
+import javax.imageio.ImageIO;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL14;
 import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.graphics.model.Node;
@@ -20,11 +59,6 @@ import cz.witzany.gamev2.graphics.utils.Shader;
 import cz.witzany.gamev2.graphics.utils.ShaderLoader;
 import cz.witzany.gamev2.gui.EventHandler;
 import cz.witzany.gamev2.gui.GUI;
-import cz.witzany.gamev2.net.Message;
-import cz.witzany.gamev2.net.utils.ByteUtils;
-import cz.witzany.gamev2.net.utils.Type;
-
-import static org.lwjgl.opengl.GL11.*;
 
 public class Game implements Runnable {
 
@@ -33,12 +67,13 @@ public class Game implements Runnable {
 	private int delta;
 	private PosNode follow;
 	private int width, height;
-	public float night = 1f;
+	public float night = 0.7f;
 	private FBO mapFBO;
 	private FBO lightingFBO;
 	private Shader postProcess;
 	private Node map;
 	private Node lights;
+	private boolean screenshot = false;
 
 	private Game() {
 		follow = null;
@@ -54,18 +89,53 @@ public class Game implements Runnable {
 		return instance;
 	}
 
+	public void screenshot() {
+		screenshot = true;
+	}
+
+	private void takeScreen() {
+		GL11.glReadBuffer(GL11.GL_FRONT);
+		int bpp = 4; // Assuming a 32-bit display with a byte each for red,
+						// green, blue, and alpha.
+		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+		GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA,
+				GL11.GL_UNSIGNED_BYTE, buffer);
+		File file = new File("screenshot.png"); // The file to save to.
+		String format = "PNG"; // Example: "PNG" or "JPG"
+		BufferedImage image = new BufferedImage(width, height,
+				BufferedImage.TYPE_INT_RGB);
+
+		for (int x = 0; x < width; x++)
+			for (int y = 0; y < height; y++) {
+				int i = (x + (width * y)) * bpp;
+				int r = buffer.get(i) & 0xFF;
+				int g = buffer.get(i + 1) & 0xFF;
+				int b = buffer.get(i + 2) & 0xFF;
+				image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16)
+						| (g << 8) | b);
+			}
+
+		try {
+			ImageIO.write(image, format, file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void tick() {
-		//setup viewport
+		float x = 0, y = 0;
+		// setup viewport
 		if (follow != null) {
 			Vector3f pos = follow.getPosition();
+			x = pos.x;
+			y = pos.y;
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
-			glOrtho(- width/2, width/2, -height
-					/ 2, height / 2, 10, -10);
+			glOrtho(-width / 2, width / 2, -height / 2, height / 2, 10, -10);
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 		}
-		
+
 		glBindTexture(GL_TEXTURE_2D, 0);
 		mapFBO.bind();
 
@@ -76,11 +146,9 @@ public class Game implements Runnable {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
 
-		glTranslatef (-width/2, -height/2, 0.0f);
-		glScaled(width, height, 1);
-		glPushMatrix();
+		glTranslatef(-x, -y, 0.0f);
 		map.tick();
-		
+
 		glBindTexture(GL_TEXTURE_2D, 0);
 		lightingFBO.bind();
 
@@ -90,57 +158,64 @@ public class Game implements Runnable {
 		glClearColor(1, 1, 1, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
-		
+
 		lights.tick();
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		lightingFBO.unbind();
 		glDisable(GL_TEXTURE_2D);
-		
+
 		glClearStencil(0);
 		glClearDepth(0x0);
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
 
-		glLoadIdentity ();
-		glTranslatef (-width/2, height/2, 0.0f);
+		glLoadIdentity();
+		glTranslatef(-width / 2, height / 2, 0.0f);
 		glScaled(width, -height, 1);
 
 		postProcess.apply();
-		postProcess.setTexture("colorMap", 0,  mapFBO.getTexture());
-		postProcess.setTexture("lightMap", 1,  lightingFBO.getTexture());
+		postProcess.setTexture("colorMap", 0, mapFBO.getTexture());
+		postProcess.setTexture("lightMap", 1, lightingFBO.getTexture());
+		postProcess.setFloatUniform("night", night);
 
 		glColor3d(1, 0, 1);
 		glBegin(GL11.GL_QUADS);
-		glTexCoord2f(0, 0); glVertex2d(0, 0);
-		glTexCoord2f(1, 0); glVertex2d(1, 0);
-		glTexCoord2f(1, 1); glVertex2d(1, 1);
-		glTexCoord2f(0, 1); glVertex2d(0, 1);
+		glTexCoord2f(0, 0);
+		glVertex2d(0, 0);
+		glTexCoord2f(1, 0);
+		glVertex2d(1, 0);
+		glTexCoord2f(1, 1);
+		glVertex2d(1, 1);
+		glTexCoord2f(0, 1);
+		glVertex2d(0, 1);
 		glEnd();
+		
+		if(screenshot){
+			takeScreen();
+			screenshot=false;
+		}
 
-		glFlush ();		
+		glFlush();
 	}
-	
-	private void initGL(){
+
+	private void initGL() {
 		try {
 			setDisplayMode(1680, 1050, true);
 			Display.create();
 		} catch (LWJGLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		mapFBO = new FBO(width, height);
 		lightingFBO = new FBO(width, height);
-		postProcess = ShaderLoader.loadShader("Data/Shaders/Postprocess"); 
+		postProcess = ShaderLoader.loadShader("Data/Shaders/Postprocess");
 
-		glClearColor (0.0f, 0.0f, 0.0f, 0.5f);						// Black Background
-		glClearDepth (0.0f);										// Depth Buffer Setup
-		glShadeModel (GL_SMOOTH);									// Select Smooth Shading
-		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);			// Set Perspective Calculations To Most Accurate
+		glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
+		glClearDepth(1.0f); // Depth Buffer Setup
 		glShadeModel(GL_SMOOTH);
-		
+
 		glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
 		glDepthRange(1.0f, 0.0f);
@@ -152,24 +227,25 @@ public class Game implements Runnable {
 		glDepthFunc(GL_GREATER);
 		glStencilFunc(GL_NEVER, 0x0, 0xFFFFFFFF);
 	}
-	
-	private void initMap(){
-		
-		lights = new Node(1);
-		map = new Node(1);
-		
-		map.addChild(new Image(2, 0, 0, 9.999f, 1,
+
+	private void initMap() {
+
+		lights = new Node();
+		map = new Node();
+
+		map.addChild(new Image(0, 0, 9.999f, 1,
 				"Data/Textures/Sprites/TerrainSample"));
-		map.addChild(new DepthSprite(5, 0, 0, 0.7,
+		map.addChild(new DepthSprite(0, 0, 0.7,
 				"Data/Textures/Depthsprites/House", 1f));
-		map.addChild(new FunAnim(6, 300, 25, 0.3,
+		map.addChild(new FunAnim(300, 25, 0.3,
 				"Data/Textures/Depthsprites/Kostka", 0.4f));
-		
+
 		try {
 			AnimTemplate tml = new AnimTemplate("Data/Templates/Panak.tml");
-			follow = tml.construct(7);
+			follow = tml.construct();
 			map.addChild(follow);
-			Image playerLight = new Image(0, 0, 0, 0, 3f, "Data/Textures/Sprites/RadialLight");
+			Image playerLight = new Image(0, 0, 0, 3f,
+					"Data/Textures/Sprites/RadialLight");
 			playerLight.bindPosition(follow);
 			lights.addChild(playerLight);
 			GUI.getInstance().setControlled(follow);
@@ -178,7 +254,6 @@ public class Game implements Runnable {
 			e1.printStackTrace();
 		}
 		map.addChild(GUI.getInstance());
-		
 	}
 
 	@Override

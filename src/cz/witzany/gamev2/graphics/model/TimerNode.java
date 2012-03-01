@@ -3,8 +3,7 @@ package cz.witzany.gamev2.graphics.model;
 public abstract class TimerNode extends PosNode{
 
 	private long time;
-	public TimerNode(int guid) {
-		super(guid);
+	public TimerNode() {
 		time=System.currentTimeMillis();
 	}
 	

@@ -6,8 +6,7 @@ public class PosNode extends Node{
 
 	private Vector3f position;
 	
-	public PosNode(int guid) {
-		super(guid);
+	public PosNode() {
 		position = new Vector3f();
 	}
 	

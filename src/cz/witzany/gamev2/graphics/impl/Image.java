@@ -20,8 +20,7 @@ public class Image extends PosNode {
 	private int tex;
 	private float tx, ty, meshScale;
 
-	public Image(int guid, int x, int y, float z, float scale, String texture) {
-		super(guid);
+	public Image(int x, int y, float z, float scale, String texture) {
 		shader = ShaderLoader.loadShader("Data/Shaders/Sprite");
 		origSize = new Rectangle();
 		File f = new File(texture);
@@ -34,9 +33,9 @@ public class Image extends PosNode {
 		tx = ty = 0;
 		meshScale = 1;
 	}
-	
-	public Image(int guid, int x, int y, float z, float scale, String shader, int texture, int width, int height){
-		super(guid);
+
+	public Image(int x, int y, float z, float scale, String shader,
+			int texture, int width, int height) {
 		this.shader = ShaderLoader.loadShader(shader);
 		this.origSize = new Rectangle(0, 0, width, height);
 		this.tex = texture;
@@ -58,15 +57,14 @@ public class Image extends PosNode {
 	}
 
 	public void update() {
-		GL11.glLoadIdentity();
 		GL11.glPushMatrix();
 		Vector3f position = getPosition();
-		GL11.glTranslatef(position.x-width/2, position.y-height/2, position.z);
+		GL11.glTranslatef(position.x - width / 2, position.y - height / 2,
+				position.z);
 		GL11.glScaled(width, height, 0);
 
 		shader.apply();
 		shader.setTexture("colorMap", 0, tex);
-		shader.setFloatUniform("night", Game.getInstance().night);
 		shader.setFloatUniform("tx", tx / width);
 		shader.setFloatUniform("ty", ty / height);
 

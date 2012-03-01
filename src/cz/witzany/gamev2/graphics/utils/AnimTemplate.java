@@ -33,11 +33,11 @@ public class AnimTemplate {
 		br.close();
 	}
 	
-	public SimpleAnim construct(int guid){
-		SimpleAnim anim = new SimpleAnim(guid);
+	public SimpleAnim construct(){
+		SimpleAnim anim = new SimpleAnim();
 		int i = 1;
 		for(FrameInfo info : frameList){
-			DepthSprite ds = new DepthSprite(guid+i, 0, 0, info.scale, info.texture, info.heightScale);
+			DepthSprite ds = new DepthSprite(0, 0, info.scale, info.texture, info.heightScale);
 			anim.addFrame(ds);
 			i++;
 		}	

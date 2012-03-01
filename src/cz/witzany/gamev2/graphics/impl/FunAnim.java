@@ -24,8 +24,7 @@ public class FunAnim extends TimerNode{
 	private float heightScale;
 	private float baseScale;
 
-	public FunAnim(int guid, int x, int y, double scale, String texture, float heightScale) {
-		super(guid);
+	public FunAnim(int x, int y, double scale, String texture, float heightScale) {
 		shader = ShaderLoader.loadShader("Data/Shaders/Depthsprite");
 		mesh = MeshLoader.loadMesh("Data/Mesh/Quad",shader);
 		origSize = new Rectangle();
@@ -57,7 +56,6 @@ public class FunAnim extends TimerNode{
 			spin = !spin;
 		}
 		
-		GL11.glLoadIdentity();
 		GL11.glPushMatrix();
 		float w = width*scale;
 		float h = height*scale;

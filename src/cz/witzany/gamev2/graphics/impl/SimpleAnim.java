@@ -10,8 +10,7 @@ public class SimpleAnim extends TimerNode {
 
 	private ArrayList<DepthSprite> frames;
 	
-	public SimpleAnim(int guid) {
-		super(guid);
+	public SimpleAnim() {
 		frames = new ArrayList<DepthSprite>();
 	}
 	

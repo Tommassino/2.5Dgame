@@ -15,11 +15,10 @@ public class GUI extends Node implements KeyHandler{
 	private static PosNode controlled;
 	private TextArea console;
 	
-	public GUI(int guid){
-		super(guid);
+	public GUI(){
 		EventHandler.initialize();
 		EventHandler.focus(this);
-		console = new TextArea(8, -Game.getInstance().getWidth()/2, -Game.getInstance().getHeight()/2, 0f, 1f);
+		console = new TextArea(0, 0, 1f, 1f);
 		addChild(console);
 	}
 	@Override
@@ -60,22 +59,27 @@ public class GUI extends Node implements KeyHandler{
 			case Keyboard.KEY_D:
 				controlled.setPosition(pos.x+5, pos.y, pos.z);
 				break;
-			case Keyboard.KEY_GRAVE:
-				EventHandler.focus(console);
-				break;
 			case Keyboard.KEY_ESCAPE:
 				System.exit(0);
-			case Keyboard.KEY_SPACE:
-				System.out.println(controlled.getPosition());
 		}
 	}
 	public void handleKeyPressed(int key) {
+		switch(key){
+		case Keyboard.KEY_GRAVE:
+			EventHandler.focus(console);
+			break;
+		case Keyboard.KEY_SYSRQ:
+			Game.getInstance().screenshot();
+			break;
+		case Keyboard.KEY_SPACE:
+			System.out.println(controlled.getPosition());
+	}
 		
 	}
 	
 	public static GUI getInstance(){
 		if(instance == null)
-			instance = new GUI(0);
+			instance = new GUI();
 		return instance;
 	}
 }

@@ -1,5 +1,6 @@
 package cz.witzany.gamev2.graphics.model;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -12,13 +13,11 @@ import cz.witzany.gamev2.net.Message;
  */
 public class Node {
 
-	private int guid;
 	private int level;
 	private Node parent;
 	private HashMap<Integer,Node> children;
 	
-	public Node(int guid){
-		this.guid = guid;
+	public Node(){
 		this.level = -1;
 		this.parent = null;
 		children = new HashMap<Integer, Node>();
@@ -35,12 +34,15 @@ public class Node {
 	
 	public void update(){}
 	
-	public int getId(){
-		return guid;
+	public void addChild(Node n){
+		if(children.keySet().size()>0)
+			addChild(Collections.max(children.keySet())+1,n);
+		else
+			addChild(1,n);
 	}
 	
-	public void addChild(Node n){
-		children.put(n.getId(), n);
+	public void addChild(int id, Node n){
+		children.put(id, n);
 		n.setParent(this);
 	}
 	
