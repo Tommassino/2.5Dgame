@@ -60,8 +60,8 @@ public class Game implements Runnable {
 			Vector3f pos = follow.getPosition();
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
-			glOrtho(pos.x - width / 2, pos.x + width / 2, pos.y + height
-					/ 2, pos.y - height / 2, 10, -10);
+			glOrtho(- width/2, width/2, -height
+					/ 2, height / 2, 10, -10);
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 		}
@@ -75,7 +75,10 @@ public class Game implements Runnable {
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
-		
+
+		glTranslatef (-width/2, -height/2, 0.0f);
+		glScaled(width, height, 1);
+		glPushMatrix();
 		map.tick();
 		
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -84,43 +87,39 @@ public class Game implements Runnable {
 		glEnable(GL_TEXTURE_2D);
 		glClearStencil(0);
 		glClearDepth(0x0);
-		glClearColor(0, 0, 0, 0);
+		glClearColor(1, 1, 1, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
 		
-		//lights.tick();
+		lights.tick();
 
+		glBindTexture(GL_TEXTURE_2D, 0);
 		lightingFBO.unbind();
+		glDisable(GL_TEXTURE_2D);
 		
 		glClearStencil(0);
 		glClearDepth(0x0);
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
-		
+
+		glLoadIdentity ();
+		glTranslatef (-width/2, height/2, 0.0f);
+		glScaled(width, -height, 1);
+
 		postProcess.apply();
 		postProcess.setTexture("colorMap", 0,  mapFBO.getTexture());
 		postProcess.setTexture("lightMap", 1,  lightingFBO.getTexture());
-		
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glTexCoord2f(0, 0); GL11.glVertex2d(0, 0);
-		GL11.glTexCoord2f(1, 0); GL11.glVertex2d(1, 0);
-		GL11.glTexCoord2f(1, 1); GL11.glVertex2d(1, 1);
-		GL11.glTexCoord2f(0, 1); GL11.glVertex2d(0, 1);
-		GL11.glEnd();
+
+		glColor3d(1, 0, 1);
+		glBegin(GL11.GL_QUADS);
+		glTexCoord2f(0, 0); glVertex2d(0, 0);
+		glTexCoord2f(1, 0); glVertex2d(1, 0);
+		glTexCoord2f(1, 1); glVertex2d(1, 1);
+		glTexCoord2f(0, 1); glVertex2d(0, 1);
+		glEnd();
 
 		glFlush ();		
-		
-		//postprocess.apply();
-		//postprocess.setTexture("colorMap", 0, firstPass.getTexture());
-
-		GL11.glBegin(GL11.GL_QUADS);
-			GL11.glTexCoord2f(0, 0); GL11.glVertex2d(0, 0);
-			GL11.glTexCoord2f(width, 0); GL11.glVertex2d(width, 0);
-			GL11.glTexCoord2f(width, height); GL11.glVertex2d(width, height);
-			GL11.glTexCoord2f(0, height); GL11.glVertex2d(0, height);
-		GL11.glEnd();
-		glDisable(GL_TEXTURE_2D);
 	}
 	
 	private void initGL(){
@@ -155,24 +154,31 @@ public class Game implements Runnable {
 	}
 	
 	private void initMap(){
+		
+		lights = new Node(1);
 		map = new Node(1);
+		
 		map.addChild(new Image(2, 0, 0, 9.999f, 1,
 				"Data/Textures/Sprites/TerrainSample"));
-		/*addChild(new DepthSprite(5, 1000, 325, 0.7,
+		map.addChild(new DepthSprite(5, 0, 0, 0.7,
 				"Data/Textures/Depthsprites/House", 1f));
-		addChild(new FunAnim(6, 840, 525, 0.3,
-				"Data/Textures/Depthsprites/Kostka", 0.4f));*/
+		map.addChild(new FunAnim(6, 300, 25, 0.3,
+				"Data/Textures/Depthsprites/Kostka", 0.4f));
 		
 		try {
 			AnimTemplate tml = new AnimTemplate("Data/Templates/Panak.tml");
 			follow = tml.construct(7);
 			map.addChild(follow);
+			Image playerLight = new Image(0, 0, 0, 0, 3f, "Data/Textures/Sprites/RadialLight");
+			playerLight.bindPosition(follow);
+			lights.addChild(playerLight);
 			GUI.getInstance().setControlled(follow);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		map.addChild(GUI.getInstance());
+		
 	}
 
 	@Override

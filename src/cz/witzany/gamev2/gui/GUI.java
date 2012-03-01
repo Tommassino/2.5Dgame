@@ -65,6 +65,8 @@ public class GUI extends Node implements KeyHandler{
 				break;
 			case Keyboard.KEY_ESCAPE:
 				System.exit(0);
+			case Keyboard.KEY_SPACE:
+				System.out.println(controlled.getPosition());
 		}
 	}
 	public void handleKeyPressed(int key) {

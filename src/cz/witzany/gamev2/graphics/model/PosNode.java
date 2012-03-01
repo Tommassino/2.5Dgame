@@ -18,5 +18,9 @@ public class PosNode extends Node{
 	public Vector3f getPosition(){
 		return position;
 	}
+	
+	public void bindPosition(PosNode p){
+		position=p.position;
+	}
 
 }

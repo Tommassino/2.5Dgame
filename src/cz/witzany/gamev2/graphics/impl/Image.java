@@ -61,7 +61,7 @@ public class Image extends PosNode {
 		GL11.glLoadIdentity();
 		GL11.glPushMatrix();
 		Vector3f position = getPosition();
-		GL11.glTranslatef(position.x, position.y, position.z);
+		GL11.glTranslatef(position.x-width/2, position.y-height/2, position.z);
 		GL11.glScaled(width, height, 0);
 
 		shader.apply();
