@@ -77,14 +77,13 @@ public class ImageLoader {
 			return -1;
 		}
 	}
-	
-	
-	public static void gen(File dir){
-		if(!dir.isDirectory())
+
+	public static void gen(File dir) {
+		if (!dir.isDirectory())
 			return;
 		File[] subs = dir.listFiles();
-		for(File f : subs){
-			if(!f.isDirectory()){
+		for (File f : subs) {
+			if (!f.isDirectory()) {
 				merge(dir.getAbsolutePath());
 				return;
 			}
@@ -97,8 +96,8 @@ public class ImageLoader {
 		if (!dir.isDirectory() || !dir.exists())
 			return;
 		File result = new File(dir, "rgbd" + dir.getName() + ".png");
-		//if (result.exists())
-		//	return;
+		// if (result.exists())
+		// return;
 		File rgba = new File(dir, dir.getName() + ".png");
 		File dept = new File(dir, "z-" + dir.getName() + ".png");
 
@@ -118,15 +117,14 @@ public class ImageLoader {
 			int width = rgbad.getWidth();
 			int height = rgbad.getHeight();
 
-			rgbad.decode(rgbaData, width * 4,
-					PNGDecoder.TextureFormat.RGBA);
+			rgbad.decode(rgbaData, width * 4, PNGDecoder.TextureFormat.RGBA);
 			rgbaData.rewind();
-			deptd.decode(deptData, width * 4,
-					PNGDecoder.TextureFormat.RGBA);
+			deptd.decode(deptData, width * 4, PNGDecoder.TextureFormat.RGBA);
 			deptData.rewind();
 
 			ColorModel cm = ColorModel.getRGBdefault();
-			WritableRaster raster = cm.createCompatibleWritableRaster(width, height);
+			WritableRaster raster = cm.createCompatibleWritableRaster(width,
+					height);
 			byte[] data1 = new byte[4];
 			byte[] data2 = new byte[4];
 			int x = 0;
@@ -134,16 +132,17 @@ public class ImageLoader {
 			while (rgbaData.hasRemaining()) {
 				rgbaData.get(data1);
 				deptData.get(data2);
-				int[] col = {data1[0],data1[1],data1[2],0xFF-data2[0]};
+				int[] col = { data1[0], data1[1], data1[2], 0xFF - data2[0] };
 				raster.setPixel(x, y, col);
 				x++;
-				if(x==width){
-					y++;x=0;
+				if (x == width) {
+					y++;
+					x = 0;
 				}
 			}
 			BufferedImage img = new BufferedImage(cm, raster, false, null);
-		    ImageIO.write(img,"png",result.getAbsoluteFile());
-		    System.out.println(path+" converted");
+			ImageIO.write(img, "png", result.getAbsoluteFile());
+			System.out.println(path + " converted");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

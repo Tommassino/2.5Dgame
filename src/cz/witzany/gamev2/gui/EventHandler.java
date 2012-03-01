@@ -15,27 +15,27 @@ public class EventHandler {
 		pressed = new boolean[KEYCODE_COUNT];
 		time = new long[KEYCODE_COUNT];
 	}
-	
-	public void setFocus(KeyHandler focus){
+
+	public void setFocus(KeyHandler focus) {
 		this.focus = focus;
 	}
 
 	private void set(int keyCode, boolean value, long time) {
 		if (keyCode < 0 || keyCode >= KEYCODE_COUNT)
 			return;
-		if (value && !pressed[keyCode]){
+		if (value && !pressed[keyCode]) {
 			focus.handleKeyPressed(keyCode);
 			focus.handleKeyEvent(keyCode);
 		}
 		pressed[keyCode] = value;
 		this.time[keyCode] = time;
 	}
-	
-	private void check(int keyCode,long time){
-		if(!pressed[keyCode])
+
+	private void check(int keyCode, long time) {
+		if (!pressed[keyCode])
 			return;
 		long diff = time - this.time[keyCode];
-		if(diff >= REFRESH_RATE){
+		if (diff >= REFRESH_RATE) {
 			focus.handleKeyEvent(keyCode);
 			this.time[keyCode] = time;
 		}
@@ -45,11 +45,11 @@ public class EventHandler {
 		long time = System.currentTimeMillis();
 		while (Keyboard.next())
 			set(Keyboard.getEventKey(), Keyboard.getEventKeyState(), time);
-		for(int i = 0; i < KEYCODE_COUNT; i++)
-			check(i,time);
+		for (int i = 0; i < KEYCODE_COUNT; i++)
+			check(i, time);
 	}
-	
-	public static void focus(KeyHandler focus){
+
+	public static void focus(KeyHandler focus) {
 		instance.setFocus(focus);
 	}
 

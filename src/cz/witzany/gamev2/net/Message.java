@@ -72,9 +72,9 @@ public class Message {
 			sb.append(byteString(b));
 		return sb.toString();
 	}
-	
-	public static String byteString(byte b){
-		int v=b & 0xFF;
-		return HEX_TABLE[v>>4]+""+HEX_TABLE[v&0x0F];
+
+	public static String byteString(byte b) {
+		int v = b & 0xFF;
+		return HEX_TABLE[v >> 4] + "" + HEX_TABLE[v & 0x0F];
 	}
 }

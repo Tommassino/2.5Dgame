@@ -51,16 +51,16 @@ public class Shader {
 		ARBShaderObjects.glAttachObjectARB(shader, fragShader);
 		ARBShaderObjects.glLinkProgramARB(shader);
 
-		if(GL20.glGetShader(shader, GL20.GL_LINK_STATUS) == GL11.GL_FALSE){
-			printLogInfo(shaderDir,shader);
+		if (GL20.glGetShader(shader, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+			printLogInfo(shaderDir, shader);
 			useShader = false;
 			return;
 		}
-		
+
 		ARBShaderObjects.glValidateProgramARB(shader);
 
-		if(GL20.glGetShader(shader, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE){
-			printLogInfo(shaderDir,shader);
+		if (GL20.glGetShader(shader, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
+			printLogInfo(shaderDir, shader);
 			useShader = false;
 			return;
 		}
@@ -88,8 +88,8 @@ public class Shader {
 		ARBShaderObjects.glShaderSourceARB(nshader, code);
 		ARBShaderObjects.glCompileShaderARB(nshader);
 
-		if(GL20.glGetShader(nshader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE){
-			printLogInfo(filename,nshader);
+		if (GL20.glGetShader(nshader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
+			printLogInfo(filename, nshader);
 			return 0;
 		}
 		return nshader;
@@ -109,15 +109,15 @@ public class Shader {
 			byte[] infoBytes = new byte[length];
 			infoLog.get(infoBytes);
 			String out = new String(infoBytes);
-			System.out.println(name+" log:\n" + out);
+			System.out.println(name + " log:\n" + out);
 		}
 		return true;
 	}
-	
-	private int getUniformLocation(String name){
+
+	private int getUniformLocation(String name) {
 		int location = ARBShaderObjects.glGetUniformLocationARB(shader, name);
-		if(location == -1)
-			throw new RuntimeException(name+" not available");
+		if (location == -1)
+			throw new RuntimeException(name + " not available");
 		return location;
 	}
 
@@ -127,25 +127,25 @@ public class Shader {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, pointer);
 		ARBShaderObjects.glUniform1iARB(location, index);
 	}
-	
-	public void setFloatUniform(String name, float value){
+
+	public void setFloatUniform(String name, float value) {
 		int location = getUniformLocation(name);
 		ARBShaderObjects.glUniform1fARB(location, value);
 	}
-	
-	public void setIntUniform(String name, int value){
+
+	public void setIntUniform(String name, int value) {
 		int location = getUniformLocation(name);
 		ARBShaderObjects.glUniform1iARB(location, value);
 	}
 
 	public synchronized void apply() {
-		if(activeShader == shader)
+		if (activeShader == shader)
 			return;
-		if (useShader){
+		if (useShader) {
 			release();
 			ARBShaderObjects.glUseProgramObjectARB(shader);
 			activeShader = shader;
-		}else
+		} else
 			System.out.println("warning, shader not used");
 	}
 

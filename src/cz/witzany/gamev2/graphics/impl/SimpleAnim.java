@@ -1,50 +1,58 @@
 package cz.witzany.gamev2.graphics.impl;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.lwjgl.util.vector.Vector3f;
 
+import cz.witzany.gamev2.graphics.model.PosNode;
 import cz.witzany.gamev2.graphics.model.TimerNode;
 
 public class SimpleAnim extends TimerNode {
 
-	private ArrayList<DepthSprite> frames;
-	
+	private static Random r = new Random();
+	private ArrayList<PosNode> frames;
+
 	public SimpleAnim() {
-		frames = new ArrayList<DepthSprite>();
-	}
-	
-	public void addFrame(DepthSprite frame){
-		frames.add(frame);
+		frames = new ArrayList<PosNode>();
 	}
 
-	private final int next = 200;
-	private int n = next;
+	public void addFrame(PosNode frame) {
+		frames.add(frame);
+		frame.bindPosition(this);
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+
+	public void runFor(int ms) {
+		this.runFor = ms;
+	}
+
+	private int speed = 200;
+	private int timer = r.nextInt() % speed;
 	private int curr = 0;
-	private int moved = 0;
+	private int runFor = -1;
+
 	@Override
 	public void update(long diff) {
-		if(frames.size()==0)
+		if (frames.size() == 0)
 			return;
-		
-		if(moved>0){
-			if(n < diff){
-				curr++;
-				if(curr >= frames.size())
-					curr = 0;
-				n=next;
-			}else n-= diff;
-		}
-		moved -= diff;
-		
-		DepthSprite sprite = frames.get(curr);
-		Vector3f position = getPosition();
-		sprite.setPosition(position.x, position.y, position.z);
-		sprite.update();
-	}
 
-	public void setPosition(float x, float y, float z){
-		super.setPosition(x, y, z);
-		moved = 200;
+		if (runFor >= diff || runFor == -1) {
+			if (timer < diff) {
+				curr++;
+				if (curr >= frames.size())
+					curr = 0;
+				timer = speed;
+			} else
+				timer -= diff;
+		}
+		if (runFor > 0)
+			runFor = Math.max(runFor - (int) diff, 0);
+
+		PosNode sprite = frames.get(curr);
+		sprite.update();
 	}
 }

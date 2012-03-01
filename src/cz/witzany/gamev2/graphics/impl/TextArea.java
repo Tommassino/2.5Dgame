@@ -22,7 +22,7 @@ public class TextArea extends Image implements KeyHandler {
 	}
 
 	public void delete() {
-		if(value.length()>0)
+		if (value.length() > 0)
 			value = value.substring(0, value.length() - 1);
 	}
 
@@ -87,7 +87,7 @@ public class TextArea extends Image implements KeyHandler {
 			return;
 		if (sp[0].equals("night")) {
 			float n = Float.parseFloat(sp[1]);
-			Game.getInstance().night=n;
+			Game.getInstance().night = n;
 		}
 	}
 }

@@ -1,40 +1,6 @@
 package cz.witzany.gamev2.graphics.impl;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_GREATER;
-import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_NEVER;
-import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.GL_SMOOTH;
-import static org.lwjgl.opengl.GL11.GL_STENCIL_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_STENCIL_TEST;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glAlphaFunc;
-import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glClearDepth;
-import static org.lwjgl.opengl.GL11.glClearStencil;
-import static org.lwjgl.opengl.GL11.glColor3d;
-import static org.lwjgl.opengl.GL11.glDepthFunc;
-import static org.lwjgl.opengl.GL11.glDepthRange;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glFlush;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glOrtho;
-import static org.lwjgl.opengl.GL11.glPushAttrib;
-import static org.lwjgl.opengl.GL11.glScaled;
-import static org.lwjgl.opengl.GL11.glShadeModel;
-import static org.lwjgl.opengl.GL11.glStencilFunc;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-import static org.lwjgl.opengl.GL11.glVertex2d;
+import static org.lwjgl.opengl.GL11.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -136,6 +102,7 @@ public class Game implements Runnable {
 			glLoadIdentity();
 		}
 
+		glEnable(GL_DEPTH_TEST);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		mapFBO.bind();
 
@@ -148,7 +115,9 @@ public class Game implements Runnable {
 
 		glTranslatef(-x, -y, 0.0f);
 		map.tick();
+		glDisable(GL_DEPTH_TEST);
 
+		glEnable(GL_BLEND);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		lightingFBO.bind();
 
@@ -160,6 +129,7 @@ public class Game implements Runnable {
 				| GL_STENCIL_BUFFER_BIT);
 
 		lights.tick();
+		glDisable(GL_BLEND);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		lightingFBO.unbind();
@@ -191,10 +161,10 @@ public class Game implements Runnable {
 		glTexCoord2f(0, 1);
 		glVertex2d(0, 1);
 		glEnd();
-		
-		if(screenshot){
+
+		if (screenshot) {
 			takeScreen();
-			screenshot=false;
+			screenshot = false;
 		}
 
 		glFlush();
@@ -226,6 +196,27 @@ public class Game implements Runnable {
 		glAlphaFunc(GL_GREATER, 0x00);
 		glDepthFunc(GL_GREATER);
 		glStencilFunc(GL_NEVER, 0x0, 0xFFFFFFFF);
+		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	}
+
+	private void addTorch(int x, int y) {
+		try {
+			SimpleAnim a = new AnimTemplate("Data/Templates/Torch.tml")
+					.construct();
+			a.setPosition(x, y, 0);
+			map.addChild(a);
+			SimpleAnim anim = new SimpleAnim();
+			anim.bindPosition(a);
+			anim.addFrame(new Image(0, 0, 0, 2f,
+					"Data/Textures/Sprites/RadialLight"));
+			anim.addFrame(new Image(0, 0, 0, 1.95f,
+					"Data/Textures/Sprites/RadialLight"));
+			anim.setSpeed(50);
+			lights.addChild(anim);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void initMap() {
@@ -239,15 +230,14 @@ public class Game implements Runnable {
 				"Data/Textures/Depthsprites/House", 1f));
 		map.addChild(new FunAnim(300, 25, 0.3,
 				"Data/Textures/Depthsprites/Kostka", 0.4f));
+		addTorch(300, 100);
+		addTorch(-300, 100);
+		addTorch(0, 200);
 
 		try {
 			AnimTemplate tml = new AnimTemplate("Data/Templates/Panak.tml");
 			follow = tml.construct();
 			map.addChild(follow);
-			Image playerLight = new Image(0, 0, 0, 3f,
-					"Data/Textures/Sprites/RadialLight");
-			playerLight.bindPosition(follow);
-			lights.addChild(playerLight);
 			GUI.getInstance().setControlled(follow);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block

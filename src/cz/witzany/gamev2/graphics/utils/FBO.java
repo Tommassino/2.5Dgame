@@ -30,44 +30,56 @@ public class FBO {
 	private int FBOId;
 	private int textureId;
 	private int depthId;
-	private int width,height;
-	
-	public FBO(int width, int height){
+	private int width, height;
+
+	public FBO(int width, int height) {
 		this.width = width;
 		this.height = height;
-		if(!GLContext.getCapabilities().GL_EXT_framebuffer_object)
+		if (!GLContext.getCapabilities().GL_EXT_framebuffer_object)
 			throw new RuntimeException("GPU doesnt support framebuffer objects");
-		
+
 		FBOId = glGenFramebuffersEXT();
 		textureId = glGenTextures();
 		depthId = glGenRenderbuffersEXT();
-		
+
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FBOId);
-		
+
 		// initialize color texture
-		glBindTexture(GL_TEXTURE_2D, textureId);                                   // Bind the colorbuffer texture
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);               // make it linear filterd
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,GL_RGBA, GL_INT, (java.nio.ByteBuffer) null);  // Create the texture data
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_COLOR_ATTACHMENT0_EXT,GL_TEXTURE_2D, textureId, 0); // attach it to the framebuffer
-		 
-		 
+		glBindTexture(GL_TEXTURE_2D, textureId); // Bind the colorbuffer texture
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // make
+																			// it
+																			// linear
+																			// filterd
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+				GL_INT, (java.nio.ByteBuffer) null); // Create the texture data
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+				GL_TEXTURE_2D, textureId, 0); // attach it to the framebuffer
+
 		// initialize depth renderbuffer
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthId);                // bind the depth renderbuffer
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL14.GL_DEPTH_COMPONENT24, width, height); // get the data space for it
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,GL_DEPTH_ATTACHMENT_EXT,GL_RENDERBUFFER_EXT, depthId); // bind it to the renderbuffer
-		 
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);                                    // Swithch back to normal framebuffer rendering
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthId); // bind the depth
+																// renderbuffer
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+				GL14.GL_DEPTH_COMPONENT24, width, height); // get the data space
+															// for it
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+				GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthId); // bind
+																		// it to
+																		// the
+																		// renderbuffer
+
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); // Swithch back to normal
+														// framebuffer rendering
 	}
-	
-	public int getTexture(){
+
+	public int getTexture() {
 		return textureId;
 	}
-	
-	public void bind(){
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, FBOId);
+
+	public void bind() {
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FBOId);
 	}
-	
-	public void unbind(){
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0);
+
+	public void unbind() {
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
 }
