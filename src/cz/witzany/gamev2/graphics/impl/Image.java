@@ -34,6 +34,19 @@ public class Image extends PosNode {
 		tx = ty = 0;
 		meshScale = 1;
 	}
+	
+	public Image(int guid, int x, int y, float z, float scale, String shader, int texture, int width, int height){
+		super(guid);
+		this.shader = ShaderLoader.loadShader(shader);
+		this.origSize = new Rectangle(0, 0, width, height);
+		this.tex = texture;
+		this.width = (int) (origSize.width * scale);
+		this.height = (int) (origSize.height * scale);
+		setPosition(x, y, z);
+		this.scale = scale;
+		this.tx = this.ty = 0;
+		this.meshScale = 1;
+	}
 
 	public void setTexturePosition(float tx, float ty) {
 		this.tx = tx;

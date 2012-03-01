@@ -10,7 +10,7 @@ import cz.witzany.gamev2.net.Server;
 public class Main {
 
 	public static void main(String args[]) {
-		ImageLoader.gen(new File("Data/Textures/Depthsprites"));
+		//ImageLoader.gen(new File("Data/Textures/Depthsprites"));
 		Server server = new Server();
 		Client client = Client.getInstance();
 		try {

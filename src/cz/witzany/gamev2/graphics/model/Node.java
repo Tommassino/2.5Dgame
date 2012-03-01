@@ -10,7 +10,7 @@ import cz.witzany.gamev2.net.Message;
  * @author tommassino
  *
  */
-public abstract class Node {
+public class Node {
 
 	private int guid;
 	private int level;

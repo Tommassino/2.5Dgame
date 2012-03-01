@@ -2,23 +2,31 @@ package cz.witzany.gamev2.graphics.impl;
 
 import java.io.IOException;
 
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL14;
 import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.graphics.model.Node;
 import cz.witzany.gamev2.graphics.model.PosNode;
 import cz.witzany.gamev2.graphics.utils.AnimTemplate;
+import cz.witzany.gamev2.graphics.utils.FBO;
+import cz.witzany.gamev2.graphics.utils.Shader;
+import cz.witzany.gamev2.graphics.utils.ShaderLoader;
 import cz.witzany.gamev2.gui.EventHandler;
 import cz.witzany.gamev2.gui.GUI;
 import cz.witzany.gamev2.net.Message;
 import cz.witzany.gamev2.net.utils.ByteUtils;
 import cz.witzany.gamev2.net.utils.Type;
 
-public class Game extends Node implements Runnable {
+import static org.lwjgl.opengl.GL11.*;
+
+public class Game implements Runnable {
 
 	private static Game instance;
 	private long lastFrame;
@@ -26,9 +34,13 @@ public class Game extends Node implements Runnable {
 	private PosNode follow;
 	private int width, height;
 	public float night = 1f;
+	private FBO mapFBO;
+	private FBO lightingFBO;
+	private Shader postProcess;
+	private Node map;
+	private Node lights;
 
 	private Game() {
-		super(1);
 		follow = null;
 	}
 
@@ -42,50 +54,76 @@ public class Game extends Node implements Runnable {
 		return instance;
 	}
 
-	@Override
-	public void update() {
+	public void tick() {
+		//setup viewport
 		if (follow != null) {
 			Vector3f pos = follow.getPosition();
-			GL11.glMatrixMode(GL11.GL_PROJECTION);
-			GL11.glLoadIdentity();
-			GL11.glOrtho(pos.x - width / 2, pos.x + width / 2, pos.y + height
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glOrtho(pos.x - width / 2, pos.x + width / 2, pos.y + height
 					/ 2, pos.y - height / 2, 10, -10);
-			GL11.glMatrixMode(GL11.GL_MODELVIEW);
-			GL11.glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
 		}
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
+		mapFBO.bind();
 
-		GL11.glClearStencil(0);
-		GL11.glClearDepth(0x0);
-		GL11.glClearColor(0, 0, 0, 0);
-		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT
-				| GL11.GL_STENCIL_BUFFER_BIT);
-		GL11.glPushAttrib(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT
-				| GL11.GL_STENCIL_BUFFER_BIT);
-		GL11.glDepthRange(1.0f, 0.0f);
+		glEnable(GL_TEXTURE_2D);
+		glClearStencil(0);
+		glClearDepth(0x0);
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+				| GL_STENCIL_BUFFER_BIT);
+		
+		map.tick();
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
+		lightingFBO.bind();
 
-		GL11.glEnable(GL11.GL_STENCIL_TEST);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		glEnable(GL_TEXTURE_2D);
+		glClearStencil(0);
+		glClearDepth(0x0);
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+				| GL_STENCIL_BUFFER_BIT);
+		
+		//lights.tick();
 
-		GL11.glAlphaFunc(GL11.GL_GREATER, 0x00);
-		GL11.glDepthFunc(GL11.GL_GREATER);
-		GL11.glStencilFunc(GL11.GL_NEVER, 0x0, 0xFFFFFFFF);
+		lightingFBO.unbind();
+		
+		glClearStencil(0);
+		glClearDepth(0x0);
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+				| GL_STENCIL_BUFFER_BIT);
+		
+		postProcess.apply();
+		postProcess.setTexture("colorMap", 0,  mapFBO.getTexture());
+		postProcess.setTexture("lightMap", 1,  lightingFBO.getTexture());
+		
+		GL11.glBegin(GL11.GL_QUADS);
+		GL11.glTexCoord2f(0, 0); GL11.glVertex2d(0, 0);
+		GL11.glTexCoord2f(1, 0); GL11.glVertex2d(1, 0);
+		GL11.glTexCoord2f(1, 1); GL11.glVertex2d(1, 1);
+		GL11.glTexCoord2f(0, 1); GL11.glVertex2d(0, 1);
+		GL11.glEnd();
+
+		glFlush ();		
+		
+		//postprocess.apply();
+		//postprocess.setTexture("colorMap", 0, firstPass.getTexture());
+
+		GL11.glBegin(GL11.GL_QUADS);
+			GL11.glTexCoord2f(0, 0); GL11.glVertex2d(0, 0);
+			GL11.glTexCoord2f(width, 0); GL11.glVertex2d(width, 0);
+			GL11.glTexCoord2f(width, height); GL11.glVertex2d(width, height);
+			GL11.glTexCoord2f(0, height); GL11.glVertex2d(0, height);
+		GL11.glEnd();
+		glDisable(GL_TEXTURE_2D);
 	}
-
-	@Override
-	public void messageRecieved(Message msg) {
-		byte[] data = msg.getData();
-		switch (data[0]) {
-		case 1: // cmd add child
-			int type = ByteUtils.readInt(data, 1);
-			Object node = Type.createInstance(type, ByteUtils.readInt(data, 5));
-			addChild((Node) node);
-			break;
-		}
-	}
-
-	@Override
-	public void run() {
+	
+	private void initGL(){
 		try {
 			setDisplayMode(1680, 1050, true);
 			Display.create();
@@ -93,39 +131,60 @@ public class Game extends Node implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		addChild(new Image(2, 0, 0, 9.999f, 1,
+		
+		mapFBO = new FBO(width, height);
+		lightingFBO = new FBO(width, height);
+		postProcess = ShaderLoader.loadShader("Data/Shaders/Postprocess"); 
+
+		glClearColor (0.0f, 0.0f, 0.0f, 0.5f);						// Black Background
+		glClearDepth (0.0f);										// Depth Buffer Setup
+		glShadeModel (GL_SMOOTH);									// Select Smooth Shading
+		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);			// Set Perspective Calculations To Most Accurate
+		glShadeModel(GL_SMOOTH);
+		
+		glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT
+				| GL_STENCIL_BUFFER_BIT);
+		glDepthRange(1.0f, 0.0f);
+
+		glEnable(GL_STENCIL_TEST);
+		glEnable(GL_DEPTH_TEST);
+
+		glAlphaFunc(GL_GREATER, 0x00);
+		glDepthFunc(GL_GREATER);
+		glStencilFunc(GL_NEVER, 0x0, 0xFFFFFFFF);
+	}
+	
+	private void initMap(){
+		map = new Node(1);
+		map.addChild(new Image(2, 0, 0, 9.999f, 1,
 				"Data/Textures/Sprites/TerrainSample"));
-		addChild(new DepthSprite(5, 1000, 325, 0.7,
+		/*addChild(new DepthSprite(5, 1000, 325, 0.7,
 				"Data/Textures/Depthsprites/House", 1f));
 		addChild(new FunAnim(6, 840, 525, 0.3,
-				"Data/Textures/Depthsprites/Kostka", 0.4f));
+				"Data/Textures/Depthsprites/Kostka", 0.4f));*/
+		
 		try {
 			AnimTemplate tml = new AnimTemplate("Data/Templates/Panak.tml");
 			follow = tml.construct(7);
-			addChild(follow);
+			map.addChild(follow);
 			GUI.getInstance().setControlled(follow);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		addChild(GUI.getInstance());
+		map.addChild(GUI.getInstance());
+	}
 
-		GL11.glShadeModel(GL11.GL_SMOOTH);
+	@Override
+	public void run() {
+		initGL();
+		initMap();
 
 		int frames = 0;
 		long total = 0;
 		lastFrame = (Sys.getTime() * 1000) / Sys.getTimerResolution();
 		while (!Display.isCloseRequested()) {
 			long time = (Sys.getTime() * 1000) / Sys.getTimerResolution();
-			if (time - lastFrame < 16) {
-				try {
-					Thread.sleep(16 - time + lastFrame);
-					time = (Sys.getTime() * 1000) / Sys.getTimerResolution();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
 			delta = (int) (time - lastFrame);
 			frames++;
 			total += delta;
@@ -139,6 +198,7 @@ public class Game extends Node implements Runnable {
 			tick();
 			lastFrame = time;
 			Display.update();
+			Display.sync(60);
 		}
 		Display.destroy();
 		System.exit(0);

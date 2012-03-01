@@ -37,7 +37,7 @@ public class Client implements Runnable{
 			try {
 				Message m = Message.readMessage(in);
 				System.out.println("Message recieved "+m);
-				Game.getInstance().message(m, 0);
+				//Game.getInstance().message(m, 0);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
