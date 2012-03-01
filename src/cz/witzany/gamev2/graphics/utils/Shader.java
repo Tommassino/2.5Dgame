@@ -80,6 +80,7 @@ public class Shader {
 			while ((line = reader.readLine()) != null) {
 				code += line + "\n";
 			}
+			reader.close();
 		} catch (Exception e) {
 			System.out.println("Fail reading vertex shading code");
 			return 0;
@@ -112,14 +113,29 @@ public class Shader {
 		}
 		return true;
 	}
+	
+	private int getUniformLocation(String name){
+		int location = ARBShaderObjects.glGetUniformLocationARB(shader, name);
+		if(location == -1)
+			throw new RuntimeException(name+" not available");
+		return location;
+	}
 
 	public void setTexture(String name, int index, int pointer) {
-		int location = ARBShaderObjects.glGetUniformLocationARB(shader, name);
-		if (location == -1)
-			throw new RuntimeException(name + " not available");
+		int location = getUniformLocation(name);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0 + index);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, pointer);
 		ARBShaderObjects.glUniform1iARB(location, index);
+	}
+	
+	public void setFloatUniform(String name, float value){
+		int location = getUniformLocation(name);
+		ARBShaderObjects.glUniform1fARB(location, value);
+	}
+	
+	public void setIntUniform(String name, int value){
+		int location = getUniformLocation(name);
+		ARBShaderObjects.glUniform1iARB(location, value);
 	}
 
 	public synchronized void apply() {

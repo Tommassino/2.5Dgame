@@ -1,0 +1,1 @@
+java -Djava.library.path=game_lib -jar game.jar

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import cz.witzany.gamev2.graphics.Game;
+import cz.witzany.gamev2.graphics.impl.Game;
 
 public class Client implements Runnable{
 

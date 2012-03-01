@@ -97,8 +97,8 @@ public class ImageLoader {
 		if (!dir.isDirectory() || !dir.exists())
 			return;
 		File result = new File(dir, "rgbd" + dir.getName() + ".png");
-		if (result.exists())
-			return;
+		//if (result.exists())
+		//	return;
 		File rgba = new File(dir, dir.getName() + ".png");
 		File dept = new File(dir, "z-" + dir.getName() + ".png");
 

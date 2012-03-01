@@ -1,5 +1,8 @@
-uniform sampler2D colorMap;
+varying vec2 texCoord;
+uniform sampler2D colorMap;    
+uniform float night;
 
-void main(){
-    gl_FragColor = texture2D( colorMap, (gl_TexCoord[0].st));
+void main(){             
+     vec4 c = texture2D(colorMap, texCoord);
+     gl_FragColor = c*night;
 }

@@ -2,7 +2,6 @@ package cz.witzany.gamev2.graphics.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -53,9 +52,9 @@ public class Mesh {
 		ARBVertexBufferObject.glGenBuffersARB(buffer);
 		return buffer.get(0);
 	}
-	
+
 	public void bind() {
-		if(loadedBuffer == VBOBuffer)
+		if (loadedBuffer == VBOBuffer)
 			return;
 		// bind the buffer
 		ARBVertexBufferObject.glBindBufferARB(

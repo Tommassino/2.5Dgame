@@ -130,6 +130,22 @@ public class PNGDecoder {
 		return colorType == COLOR_TRUEALPHA || colorType == COLOR_TRUECOLOR
 				|| colorType == COLOR_INDEXED;
 	}
+	
+	/*
+	public void decode(ByteBuffer buffer, int stride, TextureFormat fmt, int x, int y, int width, int height) throws IOException{
+		ByteBuffer bf = ByteBuffer.allocateDirect(bytesPerPixel * width * height);
+		decode(bf,stride,fmt);
+		byte[] buf = new byte[bytesPerPixel]; 
+		for(int i = y; i < y+height; i++){
+			int j=x;
+			bf.position(i*stride+j*4);
+			for(; j<x+width; j++){
+				bf.get(buf);
+				buffer.put(buf);
+			}
+		}
+	}*/
+	
 
 	public void decode(ByteBuffer buffer, int stride, TextureFormat fmt)
 			throws IOException {
