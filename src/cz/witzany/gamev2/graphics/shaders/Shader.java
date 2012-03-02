@@ -1,4 +1,4 @@
-package cz.witzany.gamev2.graphics.utils;
+package cz.witzany.gamev2.graphics.shaders;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -128,16 +128,6 @@ public class Shader {
 		ARBShaderObjects.glUniform1iARB(location, index);
 	}
 
-	public void setFloatUniform(String name, float value) {
-		int location = getUniformLocation(name);
-		ARBShaderObjects.glUniform1fARB(location, value);
-	}
-
-	public void setIntUniform(String name, int value) {
-		int location = getUniformLocation(name);
-		ARBShaderObjects.glUniform1iARB(location, value);
-	}
-
 	public synchronized void apply() {
 		if (activeShader == shader)
 			return;
@@ -152,4 +142,14 @@ public class Shader {
 	private void release() {
 		ARBShaderObjects.glUseProgramObjectARB(0);
 	}
+	
+	public void setUniform(String name, Float value){
+		int location = getUniformLocation(name);
+		ARBShaderObjects.glUniform1fARB(location, value);
+	}
+	
+	/*public void setUniform(String name, Integer value){
+		int location = getUniformLocation(name);
+		ARBShaderObjects.glUniform1iARB(location, value);
+	}*/
 }

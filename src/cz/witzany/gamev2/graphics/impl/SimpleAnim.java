@@ -5,19 +5,18 @@ import java.util.Random;
 
 import org.lwjgl.util.vector.Vector3f;
 
-import cz.witzany.gamev2.graphics.model.PosNode;
-import cz.witzany.gamev2.graphics.model.TimerNode;
+import cz.witzany.gamev2.graphics.Node;
 
-public class SimpleAnim extends TimerNode {
+public class SimpleAnim extends Node {
 
 	private static Random r = new Random();
-	private ArrayList<PosNode> frames;
+	private ArrayList<Node> frames;
 
 	public SimpleAnim() {
-		frames = new ArrayList<PosNode>();
+		frames = new ArrayList<Node>();
 	}
 
-	public void addFrame(PosNode frame) {
+	public void addFrame(Node frame) {
 		frames.add(frame);
 		frame.bindPosition(this);
 	}
@@ -36,7 +35,7 @@ public class SimpleAnim extends TimerNode {
 	private int runFor = -1;
 
 	@Override
-	public void update(long diff) {
+	public void update(int diff) {
 		if (frames.size() == 0)
 			return;
 
@@ -52,7 +51,7 @@ public class SimpleAnim extends TimerNode {
 		if (runFor > 0)
 			runFor = Math.max(runFor - (int) diff, 0);
 
-		PosNode sprite = frames.get(curr);
-		sprite.update();
+		Node sprite = frames.get(curr);
+		sprite.update(diff);
 	}
 }

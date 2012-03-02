@@ -9,6 +9,8 @@ import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+import cz.witzany.gamev2.graphics.shaders.Shader;
+
 public class Mesh {
 	private static int loadedBuffer = -1;
 	private int VBOBuffer;

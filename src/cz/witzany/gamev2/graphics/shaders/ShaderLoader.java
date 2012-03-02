@@ -1,4 +1,4 @@
-package cz.witzany.gamev2.graphics.utils;
+package cz.witzany.gamev2.graphics.shaders;
 
 import java.util.HashMap;
 

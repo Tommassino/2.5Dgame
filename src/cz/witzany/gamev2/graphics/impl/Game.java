@@ -17,12 +17,14 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
-import cz.witzany.gamev2.graphics.model.Node;
-import cz.witzany.gamev2.graphics.model.PosNode;
+import cz.witzany.gamev2.graphics.Mutator;
+import cz.witzany.gamev2.graphics.Node;
+import cz.witzany.gamev2.graphics.shaders.DepthImage;
+import cz.witzany.gamev2.graphics.shaders.Shader;
+import cz.witzany.gamev2.graphics.shaders.ShaderLoader;
+import cz.witzany.gamev2.graphics.shaders.SimpleImage;
 import cz.witzany.gamev2.graphics.utils.AnimTemplate;
 import cz.witzany.gamev2.graphics.utils.FBO;
-import cz.witzany.gamev2.graphics.utils.Shader;
-import cz.witzany.gamev2.graphics.utils.ShaderLoader;
 import cz.witzany.gamev2.gui.EventHandler;
 import cz.witzany.gamev2.gui.GUI;
 
@@ -31,7 +33,7 @@ public class Game implements Runnable {
 	private static Game instance;
 	private long lastFrame;
 	private int delta;
-	private PosNode follow;
+	private Node follow;
 	private int width, height;
 	public float night = 0.7f;
 	private FBO mapFBO;
@@ -148,7 +150,7 @@ public class Game implements Runnable {
 		postProcess.apply();
 		postProcess.setTexture("colorMap", 0, mapFBO.getTexture());
 		postProcess.setTexture("lightMap", 1, lightingFBO.getTexture());
-		postProcess.setFloatUniform("night", night);
+		postProcess.setUniform("night", night);
 
 		glColor3d(1, 0, 1);
 		glBegin(GL11.GL_QUADS);
@@ -207,10 +209,10 @@ public class Game implements Runnable {
 			map.addChild(a);
 			SimpleAnim anim = new SimpleAnim();
 			anim.bindPosition(a);
-			anim.addFrame(new Image(0, 0, 0, 2f,
-					"Data/Textures/Sprites/RadialLight"));
-			anim.addFrame(new Image(0, 0, 0, 1.95f,
-					"Data/Textures/Sprites/RadialLight"));
+			anim.addFrame(new ShaderedImage<SimpleImage>(0, 0, 0, 2f,
+					new SimpleImage("Data/Textures/Sprites/RadialLight")));
+			anim.addFrame(new ShaderedImage<SimpleImage>(0, 0, 0, 1.95f,
+					new SimpleImage("Data/Textures/Sprites/RadialLight")));
 			anim.setSpeed(50);
 			lights.addChild(anim);
 		} catch (IOException e) {
@@ -224,12 +226,51 @@ public class Game implements Runnable {
 		lights = new Node();
 		map = new Node();
 
-		map.addChild(new Image(0, 0, 9.999f, 1,
-				"Data/Textures/Sprites/TerrainSample"));
-		map.addChild(new DepthSprite(0, 0, 0.7,
-				"Data/Textures/Depthsprites/House", 1f));
-		map.addChild(new FunAnim(300, 25, 0.3,
-				"Data/Textures/Depthsprites/Kostka", 0.4f));
+		ShaderedImage<SimpleImage> terrain = new ShaderedImage<SimpleImage>(0, 0, 9.99f, 1, new SimpleImage("Data/Textures/Sprites/TerrainSample"));
+		ShaderedImage<DepthImage> house = new ShaderedImage<DepthImage>(0, 0, 0, 0.7f, new DepthImage("Data/Textures/Depthsprites/House",1));
+		ShaderedImage<DepthImage> fireball = new ShaderedImage<DepthImage>(300, 200, 0, 0.3f, new DepthImage("Data/Textures/Depthsprites/Fireball",0.4f));
+		ShaderedImage<SimpleImage> fireballLight = new ShaderedImage<SimpleImage>(300, 200, 0, 0.3f, new SimpleImage("Data/Textures/Sprites/FireballLight"));
+		fireballLight.bindPosition(fireball);
+		
+		map.addChild(terrain);
+		map.addChild(house);
+		map.addChild(fireball);
+		lights.addChild(fireballLight);
+		
+		fireball.addMutator(new Mutator<Node>() {
+			@Override
+			public void update(Node node, int diff) {
+				Vector3f pos = node.getPosition();
+				node.setPosition(pos.x-2, pos.y+2, pos.z);
+			}
+		});
+		
+		ShaderedImage<DepthImage> cube = new ShaderedImage<DepthImage>(300, 25, 0, 0.3f, new DepthImage("Data/Textures/Depthsprites/Kostka",0.4f));
+		cube.addMutator(new Mutator<ShaderedImage<DepthImage>>() {
+			private final float speed = 0.001f;
+			private boolean spin = true;
+			private float scale = 0.75f;
+			private final float max = 1.25f;
+			private final float min = 0.5f;
+			
+			@Override
+			public void update(ShaderedImage<DepthImage> obj, int diff) {
+				float add = speed * diff;
+				if (!spin)
+					add *= -1;
+				scale += add;
+				if (scale > max) {
+					scale = max;
+					spin = !spin;
+				} else if (scale < min) {
+					scale = min;
+					spin = !spin;
+				}
+				obj.setScale(scale);
+			}
+		});
+		map.addChild(cube);
+		
 		addTorch(300, 100);
 		addTorch(-300, 100);
 		addTorch(0, 200);

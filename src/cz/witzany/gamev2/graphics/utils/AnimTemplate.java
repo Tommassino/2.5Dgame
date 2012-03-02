@@ -5,8 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import cz.witzany.gamev2.graphics.impl.DepthSprite;
+import cz.witzany.gamev2.graphics.impl.ShaderedImage;
 import cz.witzany.gamev2.graphics.impl.SimpleAnim;
+import cz.witzany.gamev2.graphics.shaders.DepthImage;
 
 public class AnimTemplate {
 
@@ -37,8 +38,8 @@ public class AnimTemplate {
 		SimpleAnim anim = new SimpleAnim();
 		int i = 1;
 		for (FrameInfo info : frameList) {
-			DepthSprite ds = new DepthSprite(0, 0, info.scale, info.texture,
-					info.heightScale);
+			ShaderedImage<DepthImage> ds = new ShaderedImage<DepthImage>(0, 0, 0, info.scale, new DepthImage(info.texture,
+					info.heightScale));
 			anim.addFrame(ds);
 			i++;
 		}

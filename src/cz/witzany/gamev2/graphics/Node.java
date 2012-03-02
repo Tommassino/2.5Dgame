@@ -1,8 +1,11 @@
-package cz.witzany.gamev2.graphics.model;
+package cz.witzany.gamev2.graphics;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Logger;
+
+import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.net.Message;
 
@@ -15,18 +18,33 @@ import cz.witzany.gamev2.net.Message;
  */
 public class Node {
 
+	private long time;
 	private int level;
 	private Node parent;
 	private HashMap<Integer, Node> children;
+	private ArrayList<Mutator<?>> mutators;
+	private Vector3f position;
 
 	public Node() {
 		this.level = -1;
 		this.parent = null;
 		children = new HashMap<Integer, Node>();
+		mutators = new ArrayList<Mutator<?>>();
+		position = new Vector3f();
+		time = System.currentTimeMillis();
+	}
+	
+	public void addMutator(Mutator<?> m){
+		mutators.add(m);
 	}
 
 	public final void tick() {
-		update();
+		long nt = System.currentTimeMillis();
+		int diff = (int) (nt - time);
+		time = nt;
+		for(Mutator m : mutators)
+			m.update(this,diff);
+		update(diff);
 		for (Node n : children.values())
 			n.tick();
 		postUpdate();
@@ -35,7 +53,7 @@ public class Node {
 	public void postUpdate() {
 	}
 
-	public void update() {
+	public void update(int diff) {
 	}
 
 	public void addChild(Node n) {
@@ -77,5 +95,17 @@ public class Node {
 	}
 
 	public void messageRecieved(Message msg) {
+	}
+
+	public void setPosition(float x, float y, float z) {
+		position.set(x, y, z);
+	}
+
+	public Vector3f getPosition() {
+		return position;
+	}
+
+	public void bindPosition(Node p) {
+		position = p.position;
 	}
 }

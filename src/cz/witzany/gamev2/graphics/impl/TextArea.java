@@ -4,16 +4,17 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
+import cz.witzany.gamev2.graphics.shaders.SimpleImage;
 import cz.witzany.gamev2.gui.EventHandler;
 import cz.witzany.gamev2.gui.GUI;
 import cz.witzany.gamev2.gui.KeyHandler;
 
-public class TextArea extends Image implements KeyHandler {
+public class TextArea extends ShaderedImage<SimpleImage> implements KeyHandler {
 
 	private String value;
 
 	public TextArea(int x, int y, float z, float scale) {
-		super(x, y, z, scale, "Data/Textures/Sprites/CharMap");
+		super(x, y, z, scale, new SimpleImage("Data/Textures/Sprites/CharMap"));
 		value = "";
 	}
 
@@ -26,21 +27,21 @@ public class TextArea extends Image implements KeyHandler {
 			value = value.substring(0, value.length() - 1);
 	}
 
-	public void update() {
+	public void update(int diff) {
 		GL11.glPushMatrix();
 		GL11.glScaled(1, -1, 1);
 		// 16
 		float wx = width / 16.0f;
 		float hx = height / 16.0f;
-		setMeshScale(1 / 16.0f);
+		setScale(1 / 16.0f);
 
 		Vector3f position = getPosition();
 		float x = position.x;
 		int dx = 0;
 		for (char c : value.toCharArray()) {
 			setPosition(x + dx, position.y, position.z);
-			setTexturePosition(wx * (c % 16), hx * (c / 16));
-			super.update();
+			getAttributes().setTextureOffset(wx * (c % 16), hx * (c / 16));
+			super.update(diff);
 			dx += 16;
 		}
 		setPosition(x, position.y, position.z);

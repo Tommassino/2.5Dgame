@@ -4,16 +4,15 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
+import cz.witzany.gamev2.graphics.Node;
 import cz.witzany.gamev2.graphics.impl.Game;
 import cz.witzany.gamev2.graphics.impl.SimpleAnim;
 import cz.witzany.gamev2.graphics.impl.TextArea;
-import cz.witzany.gamev2.graphics.model.Node;
-import cz.witzany.gamev2.graphics.model.PosNode;
 
 public class GUI extends Node implements KeyHandler {
 
 	private static GUI instance;
-	private static PosNode controlled;
+	private static Node controlled;
 	private TextArea console;
 
 	public GUI() {
@@ -31,7 +30,7 @@ public class GUI extends Node implements KeyHandler {
 	}
 
 	@Override
-	public void update() {
+	public void update(int diff) {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glPushMatrix();
 		GL11.glLoadIdentity();
@@ -41,7 +40,7 @@ public class GUI extends Node implements KeyHandler {
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 	}
 
-	public void setControlled(PosNode c) {
+	public void setControlled(Node c) {
 		controlled = c;
 	}
 
