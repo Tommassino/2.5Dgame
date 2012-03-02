@@ -19,6 +19,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.graphics.Mutator;
 import cz.witzany.gamev2.graphics.Node;
+import cz.witzany.gamev2.graphics.ShaderedImage;
 import cz.witzany.gamev2.graphics.shaders.DepthImage;
 import cz.witzany.gamev2.graphics.shaders.Shader;
 import cz.witzany.gamev2.graphics.shaders.ShaderLoader;
@@ -36,11 +37,9 @@ public class Game implements Runnable {
 	private Node follow;
 	private int width, height;
 	public float night = 0.7f;
-	private FBO mapFBO;
-	private FBO lightingFBO;
+	private FBO map;
+	private FBO lighting;
 	private Shader postProcess;
-	private Node map;
-	private Node lights;
 	private boolean screenshot = false;
 
 	private Game() {
@@ -106,7 +105,7 @@ public class Game implements Runnable {
 
 		glEnable(GL_DEPTH_TEST);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		mapFBO.bind();
+		map.bind();
 
 		glEnable(GL_TEXTURE_2D);
 		glClearStencil(0);
@@ -116,12 +115,14 @@ public class Game implements Runnable {
 				| GL_STENCIL_BUFFER_BIT);
 
 		glTranslatef(-x, -y, 0.0f);
-		map.tick();
+		map.render();
 		glDisable(GL_DEPTH_TEST);
 
 		glEnable(GL_BLEND);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		lightingFBO.bind();
+		map.unbind();
+
+		lighting.bind();
 
 		glEnable(GL_TEXTURE_2D);
 		glClearStencil(0);
@@ -130,11 +131,12 @@ public class Game implements Runnable {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 				| GL_STENCIL_BUFFER_BIT);
 
-		lights.tick();
+		lighting.render();
 		glDisable(GL_BLEND);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		lightingFBO.unbind();
+		lighting.unbind();
+
 		glDisable(GL_TEXTURE_2D);
 
 		glClearStencil(0);
@@ -148,8 +150,8 @@ public class Game implements Runnable {
 		glScaled(width, -height, 1);
 
 		postProcess.apply();
-		postProcess.setTexture("colorMap", 0, mapFBO.getTexture());
-		postProcess.setTexture("lightMap", 1, lightingFBO.getTexture());
+		postProcess.setTexture("colorMap", 0, map.getTexture());
+		postProcess.setTexture("lightMap", 1, lighting.getTexture());
 		postProcess.setUniform("night", night);
 
 		glColor3d(1, 0, 1);
@@ -171,6 +173,10 @@ public class Game implements Runnable {
 
 		glFlush();
 	}
+	
+	public FBO getMap(){
+		return map;
+	}
 
 	private void initGL() {
 		try {
@@ -180,8 +186,8 @@ public class Game implements Runnable {
 			e.printStackTrace();
 		}
 
-		mapFBO = new FBO(width, height);
-		lightingFBO = new FBO(width, height);
+		map = new FBO(width, height);
+		lighting = new FBO(width, height);
 		postProcess = ShaderLoader.loadShader("Data/Shaders/Postprocess");
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
@@ -214,7 +220,7 @@ public class Game implements Runnable {
 			anim.addFrame(new ShaderedImage<SimpleImage>(0, 0, 0, 1.95f,
 					new SimpleImage("Data/Textures/Sprites/RadialLight")));
 			anim.setSpeed(50);
-			lights.addChild(anim);
+			lighting.addChild(anim);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -222,37 +228,42 @@ public class Game implements Runnable {
 	}
 
 	private void initMap() {
-
-		lights = new Node();
-		map = new Node();
-
-		ShaderedImage<SimpleImage> terrain = new ShaderedImage<SimpleImage>(0, 0, 9.99f, 1, new SimpleImage("Data/Textures/Sprites/TerrainSample"));
-		ShaderedImage<DepthImage> house = new ShaderedImage<DepthImage>(0, 0, 0, 0.7f, new DepthImage("Data/Textures/Depthsprites/House",1));
-		ShaderedImage<DepthImage> fireball = new ShaderedImage<DepthImage>(300, 200, 0, 0.3f, new DepthImage("Data/Textures/Depthsprites/Fireball",0.4f));
-		ShaderedImage<SimpleImage> fireballLight = new ShaderedImage<SimpleImage>(300, 200, 0, 0.3f, new SimpleImage("Data/Textures/Sprites/FireballLight"));
+		ShaderedImage<SimpleImage> terrain = new ShaderedImage<SimpleImage>(0,
+				0, 9.99f, 1, new SimpleImage(
+						"Data/Textures/Sprites/TerrainSample"));
+		ShaderedImage<DepthImage> house = new ShaderedImage<DepthImage>(0, 0,
+				0, 0.7f, new DepthImage("Data/Textures/Depthsprites/House", 1));
+		ShaderedImage<DepthImage> fireball = new ShaderedImage<DepthImage>(300,
+				200, 0, 0.3f, new DepthImage(
+						"Data/Textures/Depthsprites/Fireball", 0.4f));
+		ShaderedImage<SimpleImage> fireballLight = new ShaderedImage<SimpleImage>(
+				300, 200, 0, 0.3f, new SimpleImage(
+						"Data/Textures/Sprites/FireballLight"));
 		fireballLight.bindPosition(fireball);
-		
+
 		map.addChild(terrain);
 		map.addChild(house);
 		map.addChild(fireball);
-		lights.addChild(fireballLight);
-		
+		lighting.addChild(fireballLight);
+
 		fireball.addMutator(new Mutator<Node>() {
 			@Override
 			public void update(Node node, int diff) {
 				Vector3f pos = node.getPosition();
-				node.setPosition(pos.x-2, pos.y+2, pos.z);
+				node.setPosition(pos.x - 2, pos.y + 2, pos.z);
 			}
 		});
-		
-		ShaderedImage<DepthImage> cube = new ShaderedImage<DepthImage>(300, 25, 0, 0.3f, new DepthImage("Data/Textures/Depthsprites/Kostka",0.4f));
+
+		ShaderedImage<DepthImage> cube = new ShaderedImage<DepthImage>(300, 25,
+				0, 0.3f, new DepthImage("Data/Textures/Depthsprites/Kostka",
+						0.4f));
 		cube.addMutator(new Mutator<ShaderedImage<DepthImage>>() {
 			private final float speed = 0.001f;
 			private boolean spin = true;
 			private float scale = 0.75f;
 			private final float max = 1.25f;
 			private final float min = 0.5f;
-			
+
 			@Override
 			public void update(ShaderedImage<DepthImage> obj, int diff) {
 				float add = speed * diff;
@@ -270,7 +281,7 @@ public class Game implements Runnable {
 			}
 		});
 		map.addChild(cube);
-		
+
 		addTorch(300, 100);
 		addTorch(-300, 100);
 		addTorch(0, 200);
@@ -284,7 +295,6 @@ public class Game implements Runnable {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		map.addChild(GUI.getInstance());
 	}
 
 	@Override

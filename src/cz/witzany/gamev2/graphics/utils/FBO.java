@@ -22,8 +22,13 @@ import static org.lwjgl.opengl.GL11.glGenTextures;
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 import static org.lwjgl.opengl.GL11.glTexParameterf;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GLContext;
+
+import cz.witzany.gamev2.graphics.Node;
 
 public class FBO {
 
@@ -31,6 +36,7 @@ public class FBO {
 	private int textureId;
 	private int depthId;
 	private int width, height;
+	private HashMap<Integer,Node> children;
 
 	public FBO(int width, int height) {
 		this.width = width;
@@ -69,17 +75,34 @@ public class FBO {
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); // Swithch back to normal
 														// framebuffer rendering
+		children = new HashMap<Integer, Node>();
 	}
 
 	public int getTexture() {
 		return textureId;
 	}
-
-	public void bind() {
+	
+	public void bind(){
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FBOId);
 	}
-
-	public void unbind() {
+	
+	public void render(){
+		for(Node n : children.values())
+			n.tick();
+	}
+	
+	public void unbind(){
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	}
+
+	public void addChild(Node n) {
+		if (children.keySet().size() > 0)
+			addChild(Collections.max(children.keySet()) + 1, n);
+		else
+			addChild(1, n);
+	}
+
+	public void addChild(int id, Node n) {
+		children.put(id, n);
 	}
 }

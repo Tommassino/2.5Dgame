@@ -9,7 +9,7 @@ import cz.witzany.gamev2.graphics.impl.Game;
 import cz.witzany.gamev2.graphics.impl.SimpleAnim;
 import cz.witzany.gamev2.graphics.impl.TextArea;
 
-public class GUI extends Node implements KeyHandler {
+public class GUI implements KeyHandler {
 
 	private static GUI instance;
 	private static Node controlled;
@@ -19,9 +19,10 @@ public class GUI extends Node implements KeyHandler {
 		EventHandler.initialize();
 		EventHandler.focus(this);
 		console = new TextArea(0, 0, 1f, 1f);
-		addChild(console);
+		Game.getInstance().getMap().addChild(console);
 	}
 
+	/*
 	@Override
 	public void postUpdate() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -38,7 +39,7 @@ public class GUI extends Node implements KeyHandler {
 		int height = Game.getInstance().getHeight();
 		GL11.glOrtho(-width / 2, width / 2, height / 2, -height / 2, 10, -10);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-	}
+	}*/
 
 	public void setControlled(Node c) {
 		controlled = c;

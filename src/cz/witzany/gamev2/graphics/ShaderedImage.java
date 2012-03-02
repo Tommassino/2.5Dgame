@@ -1,9 +1,8 @@
-package cz.witzany.gamev2.graphics.impl;
+package cz.witzany.gamev2.graphics;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
-import cz.witzany.gamev2.graphics.Node;
 import cz.witzany.gamev2.graphics.shaders.ShaderAttributes;
 import cz.witzany.gamev2.graphics.utils.Mesh;
 

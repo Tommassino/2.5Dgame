@@ -5,7 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import cz.witzany.gamev2.graphics.impl.ShaderedImage;
+import cz.witzany.gamev2.graphics.ShaderedImage;
 import cz.witzany.gamev2.graphics.impl.SimpleAnim;
 import cz.witzany.gamev2.graphics.shaders.DepthImage;
 
