@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.graphics.ShaderedImage;
+import cz.witzany.gamev2.graphics.shaders.CharMap;
 import cz.witzany.gamev2.graphics.shaders.SimpleImage;
 import cz.witzany.gamev2.gui.EventHandler;
 import cz.witzany.gamev2.gui.GUI;
@@ -32,16 +33,15 @@ public class TextArea extends ShaderedImage<SimpleImage> implements KeyHandler {
 		GL11.glPushMatrix();
 		GL11.glScaled(1, -1, 1);
 		// 16
-		float wx = width / 16.0f;
-		float hx = height / 16.0f;
-		setScale(1 / 16.0f);
+		setScale(1/16.0f);
+		getAttributes().setMeshScale(1/16.0f);
 
 		Vector3f position = getPosition();
 		float x = position.x;
 		int dx = 0;
 		for (char c : value.toCharArray()) {
 			setPosition(x + dx, position.y, position.z);
-			getAttributes().setTextureOffset(wx * (c % 16), hx * (c / 16));
+			getAttributes().setTextureOffset(width*(c % 16), height*(c / 16));
 			super.update(diff);
 			dx += 16;
 		}

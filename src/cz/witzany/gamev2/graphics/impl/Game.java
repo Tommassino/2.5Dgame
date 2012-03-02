@@ -165,6 +165,12 @@ public class Game implements Runnable {
 		glTexCoord2f(0, 1);
 		glVertex2d(0, 1);
 		glEnd();
+		
+		postProcess.release();
+
+		GUI.getInstance().bind();
+		GUI.getInstance().render();
+		GUI.getInstance().unbind();
 
 		if (screenshot) {
 			takeScreen();
@@ -172,10 +178,6 @@ public class Game implements Runnable {
 		}
 
 		glFlush();
-	}
-	
-	public FBO getMap(){
-		return map;
 	}
 
 	private void initGL() {

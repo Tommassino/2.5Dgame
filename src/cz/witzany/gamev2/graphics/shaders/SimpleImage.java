@@ -9,6 +9,7 @@ public class SimpleImage extends ShaderAttributes{
 
 	private int tex;
 	private float tx, ty;
+	private float meshScale;
 	
 	public SimpleImage(String texture) {
 		super(ShaderLoader.loadShader("Data/Shaders/Sprite"));
@@ -17,6 +18,7 @@ public class SimpleImage extends ShaderAttributes{
 		File color = new File(f, f.getName() + ".png");
 		tex = ImageLoader.loadImage(color.getAbsolutePath(), origSize);
 		setDimensions(origSize.width, origSize.height);
+		meshScale = 1.0f;
 	}
 
 	public void setTextureOffset(float tx, float ty) {
@@ -30,6 +32,11 @@ public class SimpleImage extends ShaderAttributes{
 		shader.setTexture("colorMap", 0, tex);
 		shader.setUniform("tx", tx / width);
 		shader.setUniform("ty", ty / height);
+		shader.setUniform("meshScale", meshScale);
+	}
+
+	public void setMeshScale(float meshScale) {
+		this.meshScale = meshScale;
 	}
 
 }

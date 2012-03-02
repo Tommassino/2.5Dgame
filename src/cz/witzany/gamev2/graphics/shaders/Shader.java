@@ -139,7 +139,7 @@ public class Shader {
 			System.out.println("warning, shader not used");
 	}
 
-	private void release() {
+	public void release() {
 		ARBShaderObjects.glUseProgramObjectARB(0);
 	}
 	
