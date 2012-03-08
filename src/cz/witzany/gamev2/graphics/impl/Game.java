@@ -182,7 +182,7 @@ public class Game implements Runnable {
 
 	private void initGL() {
 		try {
-			setDisplayMode(1680, 1050, true);
+			setDisplayMode(800, 600, false);
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -200,7 +200,7 @@ public class Game implements Runnable {
 				| GL_STENCIL_BUFFER_BIT);
 		glDepthRange(1.0f, 0.0f);
 
-		glEnable(GL_STENCIL_TEST);
+		//glEnable(GL_STENCIL_TEST);
 		glEnable(GL_DEPTH_TEST);
 
 		glAlphaFunc(GL_GREATER, 0x00);
@@ -252,7 +252,7 @@ public class Game implements Runnable {
 			@Override
 			public void update(Node node, int diff) {
 				Vector3f pos = node.getPosition();
-				node.setPosition(pos.x - 2, pos.y + 2, pos.z);
+				node.setPosition(pos.x - 5, pos.y + 5, pos.z);
 			}
 		});
 

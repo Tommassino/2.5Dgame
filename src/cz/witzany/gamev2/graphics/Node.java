@@ -1,13 +1,8 @@
 package cz.witzany.gamev2.graphics;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.logging.Logger;
 
 import org.lwjgl.util.vector.Vector3f;
-
-import cz.witzany.gamev2.net.Message;
 
 /**
  * Class representing a node in the graphics tree. Each node represents a

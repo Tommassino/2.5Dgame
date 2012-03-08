@@ -3,8 +3,6 @@ package cz.witzany.gamev2.graphics.impl;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.lwjgl.util.vector.Vector3f;
-
 import cz.witzany.gamev2.graphics.Node;
 
 public class SimpleAnim extends Node {

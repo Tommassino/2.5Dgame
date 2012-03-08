@@ -5,7 +5,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
 import cz.witzany.gamev2.graphics.ShaderedImage;
-import cz.witzany.gamev2.graphics.shaders.CharMap;
 import cz.witzany.gamev2.graphics.shaders.SimpleImage;
 import cz.witzany.gamev2.gui.EventHandler;
 import cz.witzany.gamev2.gui.GUI;

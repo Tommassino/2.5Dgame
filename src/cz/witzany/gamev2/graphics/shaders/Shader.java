@@ -87,11 +87,10 @@ public class Shader {
 		}
 		ARBShaderObjects.glShaderSourceARB(nshader, code);
 		ARBShaderObjects.glCompileShaderARB(nshader);
+		printLogInfo(filename, nshader);
 
-		if (GL20.glGetShader(nshader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-			printLogInfo(filename, nshader);
+		if (GL20.glGetShader(nshader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) 
 			return 0;
-		}
 		return nshader;
 	}
 
